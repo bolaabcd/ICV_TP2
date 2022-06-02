@@ -15,7 +15,7 @@ success,image = vidcap.read()
 assert(success)
 assert(image.max() <= 255 and image.min() >= 0)
 surf = pygame.surfarray.make_surface(image)
-image = pygame.image.tostring(surf, 'RGBA', 1)
+imagepygame = pygame.image.tostring(surf, 'RGBA', 1)
 ix, iy = surf.get_rect().size
 background_texture = None
 pikapika1 = None
@@ -24,6 +24,7 @@ pikapika3 = None
  
 def initOpenGL(dimensions):
     global background_texture
+    global imagepygame
     global pikapika1
     global pikapika2
     global pikapika3
@@ -53,7 +54,7 @@ def initOpenGL(dimensions):
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER,
         GL_LINEAR)
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, ix, iy, 0, GL_BGRA,
-        GL_UNSIGNED_BYTE, image)
+        GL_UNSIGNED_BYTE, imagepygame)
 
 def object3D(obj, x, y, z, rotation): # x,y,z is the world position
     glTranslate(x,y,z)
@@ -90,21 +91,23 @@ def draw_background():
 def update_image():
     global background_texture
     global vidcap
+    global image
+    global imagepygame
 
     success,image = vidcap.read()
     # assert(success)
     if not success:
         vidcap = cv2.VideoCapture('entrada.mp4')
         success,image = vidcap.read()
-
+    assert(success)
     assert(image.max() <= 255 and image.min() >= 0)
-    cv2.imwrite('./frames/1.jpg',image)
+    # cv2.imwrite('./frames/1.jpg',image)
     surf = pygame.surfarray.make_surface(image)
-    image = pygame.image.tostring(surf, 'RGBA', 1)
+    imagepygame = pygame.image.tostring(surf, 'RGBA', 1)
     ix, iy = surf.get_rect().size
     glBindTexture(GL_TEXTURE_2D, background_texture)
     glTexSubImage2D(GL_TEXTURE_2D, 0, 0,0, ix, iy, GL_BGRA,
-        GL_UNSIGNED_BYTE, image)
+        GL_UNSIGNED_BYTE, imagepygame)
     # glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, ix, iy, 0, GL_BGRA,
     #     GL_UNSIGNED_BYTE, image) # para debugar
 

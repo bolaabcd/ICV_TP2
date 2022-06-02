@@ -15,7 +15,7 @@ assert(success)
 assert(image.max() <= 255 and image.min() >= 0)
 cv2.imwrite('./frames/1.jpg',image)
 surf = pygame.surfarray.make_surface(image)
-image = pygame.image.tostring(surf, 'RGBA', 1)
+imagepygame = pygame.image.tostring(surf, 'RGBA', 1)
 ix, iy = surf.get_rect().size
 texid = None
 
@@ -50,6 +50,7 @@ def drawQuad(centerX, centerY, textureID):
 def draw():                                            # ondraw is called all the time
     global texid
     global vidcap
+    global image
 
     success,image = vidcap.read()
     # assert(success)
