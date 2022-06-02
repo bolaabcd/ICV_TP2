@@ -68,19 +68,6 @@ def draw():                                            # ondraw is called all th
     glMatrixMode(GL_MODELVIEW)
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT) # clear the screen
     glLoadIdentity()                                   # reset position
-    # refresh2d(width, height)                           # set mode to 2d
-
-
-    # texid = glGenTextures(1)
-    # glBindTexture(GL_TEXTURE_2D, texid)
-    # glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
-    #     GL_LINEAR)
-    # glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER,
-    #     GL_LINEAR)
-    # glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, ix, iy, 0, GL_BGRA,
-    #     GL_UNSIGNED_BYTE, image)
-
-    # glColor3f(0.0, 0.0, 1.0)                           # set color to blue
 
 
     
