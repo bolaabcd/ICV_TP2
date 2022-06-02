@@ -49,6 +49,22 @@ def drawQuad(centerX, centerY, textureID):
 
 def draw():                                            # ondraw is called all the time
     global texid
+    global vidcap
+
+    success,image = vidcap.read()
+    # assert(success)
+    if not success:
+        vidcap = cv2.VideoCapture('entrada.mp4')
+        success,image = vidcap.read()
+
+    assert(image.max() <= 255 and image.min() >= 0)
+    cv2.imwrite('./frames/1.jpg',image)
+    surf = pygame.surfarray.make_surface(image)
+    image = pygame.image.tostring(surf, 'RGBA', 1)
+    ix, iy = surf.get_rect().size
+    glTexSubImage2D(GL_TEXTURE_2D, 0, 0,0, ix, iy, GL_BGRA,
+        GL_UNSIGNED_BYTE, image)
+
     glMatrixMode(GL_MODELVIEW)
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT) # clear the screen
     glLoadIdentity()                                   # reset position
@@ -66,7 +82,7 @@ def draw():                                            # ondraw is called all th
 
     # glColor3f(0.0, 0.0, 1.0)                           # set color to blue
 
-    
+
     
     dep = 10
     larg = 1.13
