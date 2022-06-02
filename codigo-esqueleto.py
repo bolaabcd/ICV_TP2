@@ -18,11 +18,15 @@ surf = pygame.surfarray.make_surface(image)
 image = pygame.image.tostring(surf, 'RGBA', 1)
 ix, iy = surf.get_rect().size
 background_texture = None
-pikapika = None
+pikapika1 = None
+pikapika2 = None
+pikapika3 = None
  
 def initOpenGL(dimensions):
     global background_texture
-    global pikapika
+    global pikapika1
+    global pikapika2
+    global pikapika3
     (width, height) = dimensions
     
     glClearColor(0.0, 0.0, 0.0, 0.0)
@@ -38,7 +42,9 @@ def initOpenGL(dimensions):
     gluPerspective(fovy, aspect, 0.1, 100.0)
 
 
-    pikapika = OBJ("Pikachu.obj", swapyz=True)
+    pikapika1 = OBJ("Pikachu.obj", swapyz=True)
+    pikapika2 = OBJ("Pikachu.obj", swapyz=True)
+    pikapika3 = OBJ("Pikachu.obj", swapyz=True)
 
     background_texture = glGenTextures(1)
     glBindTexture(GL_TEXTURE_2D, background_texture)
@@ -49,25 +55,23 @@ def initOpenGL(dimensions):
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, ix, iy, 0, GL_BGRA,
         GL_UNSIGNED_BYTE, image)
 
-def object3D(obj):
-
-    # translada o objeto para ficar 10 unidades distante da camera (para podermos ver o objeto)
-    glTranslate(0,0,-10)
-
-    # move o model em y para centralizar ele
-    glTranslate(0,-2,0)
-    # rotaciona o modelo para podermos ve-lo de frente
-    #glRotate(90,1,0,0)
-    glRotate(-90,1,0,0)
+def object3D(obj, x, y, z, rotation): # x,y,z is the world position
+    glTranslate(x,y,z)
+    glRotate(*rotation)
     # renderiza o modelo do Pikachu
     glCallList(obj.gl_list)
 
-    # renderiza um cubo
-    glutWireCube(2.0)
+    glTranslate(0,0,1)
+    glutWireCube(2)
+
+    glTranslate(0,0,-1)
+    glRotate(-rotation[0],rotation[1],rotation[2],rotation[3])
+    glTranslate(-x,-y,-z)
+    
 
 def draw_background():
     global background_texture
-    depth = 10
+    depth = 100 # max profundidade
     scale = 1.13
     glEnable(GL_TEXTURE_2D)
     glBindTexture(GL_TEXTURE_2D, background_texture)
@@ -98,19 +102,22 @@ def update_image():
     surf = pygame.surfarray.make_surface(image)
     image = pygame.image.tostring(surf, 'RGBA', 1)
     ix, iy = surf.get_rect().size
-    # glTexSubImage2D(GL_TEXTURE_2D, 0, 0,0, ix, iy, GL_BGRA,
-    #     GL_UNSIGNED_BYTE, image)
     glBindTexture(GL_TEXTURE_2D, background_texture)
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, ix, iy, 0, GL_BGRA,
+    glTexSubImage2D(GL_TEXTURE_2D, 0, 0,0, ix, iy, GL_BGRA,
         GL_UNSIGNED_BYTE, image)
+    # glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, ix, iy, 0, GL_BGRA,
+    #     GL_UNSIGNED_BYTE, image) # para debugar
 
 def displayCallback():
-    global pikapika
-
+    global pikapika1
+    global pikapika2
+    global pikapika3
 
     glMatrixMode(GL_MODELVIEW)
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
     glLoadIdentity()
+    # glTranslate(10,0,-10) # pra ver mei de lado, debugar
+    # glRotate(45,0,1,0)
     
     # Desenhar fundo
     update_image()
@@ -118,10 +125,17 @@ def displayCallback():
 
     # carregar o modelo 3D do Pikachu
     glEnable(GL_TEXTURE_2D)
-    object3D(pikapika) 
+    object3D(pikapika1,3,-2,-10,(-90,1,0,0)) 
+    glDisable(GL_TEXTURE_2D)
+    glEnable(GL_TEXTURE_2D)
+    object3D(pikapika2,-3,-2,-10,(-90,1,0,0)) 
+    glDisable(GL_TEXTURE_2D)
+    glEnable(GL_TEXTURE_2D)
+    object3D(pikapika3,0,-2,-10,(-90,1,0,0)) 
     glDisable(GL_TEXTURE_2D)
 
-
+    # glRotate(-45,0,1,0)
+    # glTranslate(-10,-0,10)
     glutSwapBuffers()    
     
 
