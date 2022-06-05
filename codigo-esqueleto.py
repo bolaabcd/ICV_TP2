@@ -1,6 +1,8 @@
 #!/usr/bin/python3
 
+from operator import is_
 import cv2
+from cv2 import threshold
 import numpy as np
 
 from OpenGL.GL import *
@@ -21,7 +23,11 @@ background_texture = None
 pikapika1 = None
 pikapika2 = None
 pikapika3 = None
- 
+target = cv2.imread('alvo.jpg')
+target = cv2.cvtColor(target, cv2.COLOR_BGR2GRAY)
+_, target = cv2.threshold(target, 127, 255, cv2.THRESH_BINARY)
+
+
 def initOpenGL(dimensions):
     global background_texture
     global imagepygame
@@ -93,6 +99,31 @@ def area_rect_pixels(coords):
     p1,p2,p3,p4 = coords
     return abs(np.cross(p2-p1,p4-p1)/2)+abs(np.cross(p2-p3,p4-p3)/2)
 
+def get_targets(quads):
+    global target
+    global image
+
+    grayimg = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    _, trimg = cv2.threshold(grayimg, 127, 255, cv2.THRESH_BINARY)
+
+    retq, reto = [], []
+    for quad in quads:
+        twid, thei = target.shape[0], target.shape[1]
+        input_points = quad
+        output_points = np.array([[0,thei-1],[0,0],[twid-1,0]])
+        for j in range(4):
+            input_points2 = np.array(input_points[:-1]).astype(np.float32)
+            output_points = output_points.astype(np.float32)
+
+            wa = cv2.getAffineTransform(input_points2, output_points)
+            dst = cv2.warpAffine(trimg,wa,(twid,thei))
+
+            sim = np.abs(dst - target).mean()
+            if sim <= 25: # absolute mean difference
+                retq.append(quad)
+                reto.append(j)
+    return retq, reto
+
 def find_good_quadrilaterals(image):
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     _, tr = cv2.threshold(gray, 127, 255, cv2.THRESH_BINARY)
@@ -105,7 +136,34 @@ def find_good_quadrilaterals(image):
     
         if len(approx) == 4 and approx[0][0][0] != 0 and area_rect_pixels(approx[:,0]) > 1000:
             quads.append(approx[:,0])
-            # cv2.drawContours(image, [cnt], 0, (0, 0, 255), 5) # para debugar, mostra quadrilateros
+            # print(cnt, approx[:,0])
+
+
+            # debugging targets:
+            global target
+            grayimg = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+            _, trimg = cv2.threshold(grayimg, 127, 255, cv2.THRESH_BINARY)
+
+            twid, thei = target.shape[0], target.shape[1]
+            input_points = approx[:,0]
+            output_points = np.array([[0,thei-1],[0,0],[twid-1,0]])
+            draw = False
+            for j in range(4):
+                input_points2 = np.array(input_points[:-1]).astype(np.float32)
+                output_points = output_points.astype(np.float32)
+
+                wa = cv2.getAffineTransform(input_points2, output_points)
+                dst = cv2.warpAffine(trimg,wa,(twid,thei))
+
+                # sim = np.abs(dst - target).mean()
+                sim = ((dst-dst.mean())/dst.std()*(target-target.mean())/target.std()).mean()
+                # cv2.imshow(str(sim),dst)
+                # cv2.waitKey()
+                if sim >= 28/100: # absolute mean difference
+                    draw = True
+                    break
+            if draw:
+                cv2.drawContours(image, [cnt], 0, (0, 0, 255), 5) # para debugar, mostra quadrilateros
     return image, quads
 
 def update_image():
@@ -122,6 +180,7 @@ def update_image():
     assert(image.max() <= 255 and image.min() >= 0)
 
     image, quads = find_good_quadrilaterals(image)
+    where_pika, orientation = get_targets(quads)
 
     surf = pygame.surfarray.make_surface(image)
     imagepygame = pygame.image.tostring(surf, 'RGBA', 1)
