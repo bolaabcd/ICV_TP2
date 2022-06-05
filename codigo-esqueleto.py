@@ -118,10 +118,11 @@ def get_targets(quads):
             wa = cv2.getAffineTransform(input_points2, output_points)
             dst = cv2.warpAffine(trimg,wa,(twid,thei))
 
-            sim = np.abs(dst - target).mean()
-            if sim <= 25: # absolute mean difference
+            sim = ((dst-dst.mean())/dst.std()*(target-target.mean())/target.std()).mean()
+            if sim >= 28/100: # normalized cross-correlation
                 retq.append(quad)
                 reto.append(j)
+                break
     return retq, reto
 
 def find_good_quadrilaterals(image):
@@ -138,32 +139,31 @@ def find_good_quadrilaterals(image):
             quads.append(approx[:,0])
             # print(cnt, approx[:,0])
 
+            # # debugging targets:
+            # global target
+            # grayimg = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+            # _, trimg = cv2.threshold(grayimg, 127, 255, cv2.THRESH_BINARY)
 
-            # debugging targets:
-            global target
-            grayimg = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-            _, trimg = cv2.threshold(grayimg, 127, 255, cv2.THRESH_BINARY)
+            # twid, thei = target.shape[0], target.shape[1]
+            # input_points = approx[:,0]
+            # output_points = np.array([[0,thei-1],[0,0],[twid-1,0]])
+            # draw = False
+            # for j in range(4):
+            #     input_points2 = np.array(input_points[:-1]).astype(np.float32)
+            #     output_points = output_points.astype(np.float32)
 
-            twid, thei = target.shape[0], target.shape[1]
-            input_points = approx[:,0]
-            output_points = np.array([[0,thei-1],[0,0],[twid-1,0]])
-            draw = False
-            for j in range(4):
-                input_points2 = np.array(input_points[:-1]).astype(np.float32)
-                output_points = output_points.astype(np.float32)
+            #     wa = cv2.getAffineTransform(input_points2, output_points)
+            #     dst = cv2.warpAffine(trimg,wa,(twid,thei))
 
-                wa = cv2.getAffineTransform(input_points2, output_points)
-                dst = cv2.warpAffine(trimg,wa,(twid,thei))
-
-                # sim = np.abs(dst - target).mean()
-                sim = ((dst-dst.mean())/dst.std()*(target-target.mean())/target.std()).mean()
-                # cv2.imshow(str(sim),dst)
-                # cv2.waitKey()
-                if sim >= 28/100: # absolute mean difference
-                    draw = True
-                    break
-            if draw:
-                cv2.drawContours(image, [cnt], 0, (0, 0, 255), 5) # para debugar, mostra quadrilateros
+            #     # sim = np.abs(dst - target).mean()
+            #     sim = ((dst-dst.mean())/dst.std()*(target-target.mean())/target.std()).mean()
+            #     # cv2.imshow(str(sim),dst)
+            #     # cv2.waitKey()
+            #     if sim >= 28/100: # normalized cross-correlation
+            #         draw = True
+            #         break
+            # if draw:
+            #     cv2.drawContours(image, [cnt], 0, (0, 0, 255), 5) # para debugar, mostra quadrilateros
     return image, quads
 
 def update_image():
