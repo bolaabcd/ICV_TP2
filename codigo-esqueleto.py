@@ -1,12 +1,12 @@
 #!/usr/bin/python3
 
 import cv2
+import numpy as np
 
 from OpenGL.GL import *
 from OpenGL.GLUT import *
 from OpenGL.GLU import *
 
-from PIL import Image
 
 from objloader import *
 
@@ -88,6 +88,26 @@ def draw_background():
     glEnd()
     glDisable(GL_TEXTURE_2D)
 
+def area_rect_pixels(coords):
+    assert(len(coords) == 4)
+    p1,p2,p3,p4 = coords
+    return abs(np.cross(p2-p1,p4-p1)/2)+abs(np.cross(p2-p3,p4-p3)/2)
+
+def find_good_quadrilaterals(image):
+    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    _, tr = cv2.threshold(gray, 127, 255, cv2.THRESH_BINARY)
+    cnts, _ = cv2.findContours(tr, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+    quads = []
+
+    for cnt in cnts:
+        approx = cv2.approxPolyDP(
+            cnt, 0.02 * cv2.arcLength(cnt, True), True)
+    
+        if len(approx) == 4 and approx[0][0][0] != 0 and area_rect_pixels(approx[:,0]) > 1000:
+            quads.append(approx[:,0])
+            # cv2.drawContours(image, [cnt], 0, (0, 0, 255), 5) # para debugar, mostra quadrilateros
+    return image, quads
+
 def update_image():
     global background_texture
     global vidcap
@@ -95,13 +115,14 @@ def update_image():
     global imagepygame
 
     success,image = vidcap.read()
-    # assert(success)
     if not success:
         vidcap = cv2.VideoCapture('entrada.mp4')
         success,image = vidcap.read()
     assert(success)
     assert(image.max() <= 255 and image.min() >= 0)
-    # cv2.imwrite('./frames/1.jpg',image)
+
+    image, quads = find_good_quadrilaterals(image)
+
     surf = pygame.surfarray.make_surface(image)
     imagepygame = pygame.image.tostring(surf, 'RGBA', 1)
     ix, iy = surf.get_rect().size
@@ -109,7 +130,7 @@ def update_image():
     glTexSubImage2D(GL_TEXTURE_2D, 0, 0,0, ix, iy, GL_BGRA,
         GL_UNSIGNED_BYTE, imagepygame)
     # glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, ix, iy, 0, GL_BGRA,
-    #     GL_UNSIGNED_BYTE, image) # para debugar
+    #     GL_UNSIGNED_BYTE, image) # para debugar, mais lento que subimage mas menos chance de erro
 
 def displayCallback():
     global pikapika1
