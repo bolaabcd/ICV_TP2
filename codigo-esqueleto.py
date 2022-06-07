@@ -27,6 +27,26 @@ target = cv2.imread('alvo.jpg')
 target = cv2.cvtColor(target, cv2.COLOR_BGR2GRAY)
 _, target = cv2.threshold(target, 127, 255, cv2.THRESH_BINARY)
 
+cameraMatrix = np.array(
+    [
+        [305.63204, 0        , 307.02195],
+        [0        , 299.37624, 258.75539],
+        [0        , 0        , 1        ],
+    ], dtype = np.float64
+)
+
+distCoeffs = np.array([-0.03318, 0.09094, 0.02252, 0.00253, 0.00000], dtype = np.float64)
+
+openCV_to_openGL = np.array(
+    [
+        [1, 0, 0,0],
+        [0,-1, 0,0],
+        [0, 0,-1,0],
+        [0, 0, 0,1]
+    ]
+    , dtype = np.float64
+)
+
 
 def initOpenGL(dimensions):
     global background_texture
@@ -62,18 +82,45 @@ def initOpenGL(dimensions):
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, ix, iy, 0, GL_BGRA,
         GL_UNSIGNED_BYTE, imagepygame)
 
-def object3D(obj, x, y, z, rotation): # x,y,z is the world position
-    glTranslate(x,y,z)
-    glRotate(*rotation)
+def object3D(obj, tra, rotation): # x,y,z is the world position
+    global openCV_to_openGL
+    rot = cv2.Rodrigues(rotation)[0]
+
+    viewmat = np.zeros((4,4),dtype = np.float64)
+    for i in range(3):
+        for j in range(3):
+            viewmat[i][j] = rot[i][j]
+        viewmat[i][3] = tra[i][0]
+    viewmat[3][3] = 1
+
+    viewmat = openCV_to_openGL@viewmat
+
+    viewmat = viewmat.T 
+
+    # glTranslate(3,-2,0)
+    glPushMatrix()
+    glLoadMatrixd(viewmat)
+
+    # glTranslate(x,y,z)
+    # glMultMatrixf(rotation)
+    glRotate(-90,1,0,0)
+
+    glDisable(GL_TEXTURE_2D)
+    glutWireCube(2)
+    glEnable(GL_TEXTURE_2D)
     # renderiza o modelo do Pikachu
     glCallList(obj.gl_list)
 
-    glTranslate(0,0,1)
-    glutWireCube(2)
+    glRotate(90,1,0,0)
+    # glTranslate(0,0,1)
 
-    glTranslate(0,0,-1)
-    glRotate(-rotation[0],rotation[1],rotation[2],rotation[3])
-    glTranslate(-x,-y,-z)
+    # glTranslate(0,0,-1)
+    # glRotate(-rotation[0],rotation[1],rotation[2],rotation[3])
+    # glMultMatrixf(rotation.T)
+
+    glPopMatrix()
+    # glTranslate(-3,2,0)
+    # glTranslate(-x,-y,-z)
     
 
 def draw_background():
@@ -171,6 +218,8 @@ def update_image():
     global vidcap
     global image
     global imagepygame
+    global cameraMatrix
+    global distCoeffs
 
     success,image = vidcap.read()
     if not success:
@@ -181,6 +230,22 @@ def update_image():
 
     image, quads = find_good_quadrilaterals(image)
     where_pika, orientation = get_targets(quads)
+    where_pika = np.array(where_pika, dtype = np.float64)
+    siz = 3
+    obj_pts = np.array([[0,0,siz],[0,0,0],[siz,0,0],[siz,0,siz]], dtype = np.float64)
+
+    rot1 = rot2 = rot3 = np.array([[0],[0],[0]], dtype = np.float64)
+    tra1 = tra2 = tra3 = np.array([[100],[100],[100]], dtype = np.float64)
+
+    if len(where_pika) > 0:
+        success, rot1, tra1 = cv2.solvePnP(obj_pts, where_pika[0], cameraMatrix, distCoeffs)
+        assert(success)
+    if len(where_pika) > 1:
+        success, rot2, tra2 = cv2.solvePnP(obj_pts, where_pika[1], cameraMatrix, distCoeffs)
+        assert(success)
+    if len(where_pika) > 2:
+        success, rot3, tra3 = cv2.solvePnP(obj_pts, where_pika[2], cameraMatrix, distCoeffs)
+        assert(success)
 
     surf = pygame.surfarray.make_surface(image)
     imagepygame = pygame.image.tostring(surf, 'RGBA', 1)
@@ -190,6 +255,7 @@ def update_image():
         GL_UNSIGNED_BYTE, imagepygame)
     # glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, ix, iy, 0, GL_BGRA,
     #     GL_UNSIGNED_BYTE, image) # para debugar, mais lento que subimage mas menos chance de erro
+    return (rot1, tra1), (rot2, tra2), (rot3, tra3)
 
 def displayCallback():
     global pikapika1
@@ -199,26 +265,35 @@ def displayCallback():
     glMatrixMode(GL_MODELVIEW)
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
     glLoadIdentity()
-    # glTranslate(10,0,-10) # pra ver mei de lado, debugar
+    # glTranslate(10,0,-50) # pra ver mei de lado, debugar
     # glRotate(45,0,1,0)
     
     # Desenhar fundo
-    update_image()
+    (rot1, tra1), (rot2, tra2), (rot3, tra3) = update_image()
     draw_background()
 
+    # glTranslate(tra1)
+    # glRotate(rot1)
+
     # carregar o modelo 3D do Pikachu
-    glEnable(GL_TEXTURE_2D)
-    object3D(pikapika1,3,-2,-10,(-90,1,0,0)) 
-    glDisable(GL_TEXTURE_2D)
-    glEnable(GL_TEXTURE_2D)
-    object3D(pikapika2,-3,-2,-10,(-90,1,0,0)) 
-    glDisable(GL_TEXTURE_2D)
-    glEnable(GL_TEXTURE_2D)
-    object3D(pikapika3,0,-2,-10,(-90,1,0,0)) 
-    glDisable(GL_TEXTURE_2D)
+    # glEnable(GL_TEXTURE_2D)
+    # object3D(pikapika1,3,-2,-10,(-90,1,0,0)) 
+    object3D(pikapika1,tra1,rot1)
+    # glDisable(GL_TEXTURE_2D)
+    # glEnable(GL_TEXTURE_2D)
+    # object3D(pikapika2,-3,-2,-10,(-90,1,0,0)) 
+    object3D(pikapika1,tra2,rot2) 
+    # glDisable(GL_TEXTURE_2D)
+    # glEnable(GL_TEXTURE_2D)
+    # object3D(pikapika3,0,-2,-10,(-90,1,0,0)) 
+    object3D(pikapika1,tra3,rot3) 
+    # glDisable(GL_TEXTURE_2D)
+
+    # glTranslate(tra1)
+    # glRotate(rot1)
 
     # glRotate(-45,0,1,0)
-    # glTranslate(-10,-0,10)
+    # glTranslate(-10,-0,50)
     glutSwapBuffers()    
     
 
