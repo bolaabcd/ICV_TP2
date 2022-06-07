@@ -268,29 +268,15 @@ def displayCallback():
     # glTranslate(10,0,-50) # pra ver mei de lado, debugar
     # glRotate(45,0,1,0)
     
-    # Desenhar fundo
+    # Atualizar imagem
     (rot1, tra1), (rot2, tra2), (rot3, tra3) = update_image()
+    # Desenhar fundo
     draw_background()
 
-    # glTranslate(tra1)
-    # glRotate(rot1)
-
-    # carregar o modelo 3D do Pikachu
-    # glEnable(GL_TEXTURE_2D)
-    # object3D(pikapika1,3,-2,-10,(-90,1,0,0)) 
+    # carregar o modelo 3D dos Pikachus
     object3D(pikapika1,tra1,rot1)
-    # glDisable(GL_TEXTURE_2D)
-    # glEnable(GL_TEXTURE_2D)
-    # object3D(pikapika2,-3,-2,-10,(-90,1,0,0)) 
     object3D(pikapika1,tra2,rot2) 
-    # glDisable(GL_TEXTURE_2D)
-    # glEnable(GL_TEXTURE_2D)
-    # object3D(pikapika3,0,-2,-10,(-90,1,0,0)) 
     object3D(pikapika1,tra3,rot3) 
-    # glDisable(GL_TEXTURE_2D)
-
-    # glTranslate(tra1)
-    # glRotate(rot1)
 
     # glRotate(-45,0,1,0)
     # glTranslate(-10,-0,50)
