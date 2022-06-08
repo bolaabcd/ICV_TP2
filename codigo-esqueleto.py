@@ -103,7 +103,7 @@ def object3D(obj, tra, rotation): # x,y,z is the world position
 
     # glTranslate(x,y,z)
     # glMultMatrixf(rotation)
-    glRotate(-90,1,0,0)
+    # glRotate(-90,1,0,0)
 
     glDisable(GL_TEXTURE_2D)
     glutWireCube(2)
@@ -111,7 +111,7 @@ def object3D(obj, tra, rotation): # x,y,z is the world position
     # renderiza o modelo do Pikachu
     glCallList(obj.gl_list)
 
-    glRotate(90,1,0,0)
+    # glRotate(90,1,0,0)
     # glTranslate(0,0,1)
 
     # glTranslate(0,0,-1)
@@ -156,7 +156,7 @@ def get_targets(quads):
     retq, reto = [], []
     for quad in quads:
         twid, thei = target.shape[0], target.shape[1]
-        input_points = quad
+        input_points = quad.tolist()
         output_points = np.array([[0,thei-1],[0,0],[twid-1,0]])
         for j in range(4):
             input_points2 = np.array(input_points[:-1]).astype(np.float32)
@@ -166,8 +166,18 @@ def get_targets(quads):
             dst = cv2.warpAffine(trimg,wa,(twid,thei))
 
             sim = ((dst-dst.mean())/dst.std()*(target-target.mean())/target.std()).mean()
-            if sim >= 28/100: # normalized cross-correlation
-                retq.append(quad)
+
+            # cv2.imshow(str(test) + ' ' +str(j) + ' ' + str(sim),dst)
+            # cv2.waitKey()
+            input_points = [input_points[-1]]+input_points[:-1]
+            if sim >= 50/100: # normalized cross-correlation
+                # input_points = [input_points[3], input_points[2], input_points[1], input_points[0]]
+                # input_points = [input_points[-1]]+input_points[:-1]
+                # input_points = [input_points[-1]]+input_points[:-1]
+                # input_points = [input_points[-1]]+input_points[:-1]
+                # input_points = [input_points[-1]]+input_points[:-1]
+                # print(input_points)
+                retq.append(np.array(input_points, dtype = np.float32))
                 reto.append(j)
                 break
     return retq, reto
@@ -178,6 +188,7 @@ def find_good_quadrilaterals(image):
     cnts, _ = cv2.findContours(tr, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
     quads = []
 
+    test = 0
     for cnt in cnts:
         approx = cv2.approxPolyDP(
             cnt, 0.02 * cv2.arcLength(cnt, True), True)
@@ -192,7 +203,7 @@ def find_good_quadrilaterals(image):
             # _, trimg = cv2.threshold(grayimg, 127, 255, cv2.THRESH_BINARY)
 
             # twid, thei = target.shape[0], target.shape[1]
-            # input_points = approx[:,0]
+            # input_points = approx[:,0].tolist()
             # output_points = np.array([[0,thei-1],[0,0],[twid-1,0]])
             # draw = False
             # for j in range(4):
@@ -204,9 +215,10 @@ def find_good_quadrilaterals(image):
 
             #     # sim = np.abs(dst - target).mean()
             #     sim = ((dst-dst.mean())/dst.std()*(target-target.mean())/target.std()).mean()
-            #     # cv2.imshow(str(sim),dst)
+            #     # cv2.imshow(str(test) + ' ' +str(j) + ' ' + str(sim),dst)
             #     # cv2.waitKey()
-            #     if sim >= 28/100: # normalized cross-correlation
+            #     input_points = [input_points[-1]]+input_points[:-1]
+            #     if sim >= 50/100: # normalized cross-correlation
             #         draw = True
             #         break
             # if draw:
@@ -230,9 +242,11 @@ def update_image():
 
     image, quads = find_good_quadrilaterals(image)
     where_pika, orientation = get_targets(quads)
+    # print(orientation)
     where_pika = np.array(where_pika, dtype = np.float64)
     siz = 3
-    obj_pts = np.array([[0,0,siz],[0,0,0],[siz,0,0],[siz,0,siz]], dtype = np.float64)
+    # obj_pts = np.array([[0,0,siz],[0,0,0],[siz,0,0],[siz,0,siz]], dtype = np.float64)
+    obj_pts = np.array([[-siz/2,-siz/2,0],[-siz/2,siz/2,0],[siz/2,siz/2,0],[siz/2,-siz/2,0]], dtype = np.float64)
 
     rot1 = rot2 = rot3 = np.array([[0],[0],[0]], dtype = np.float64)
     tra1 = tra2 = tra3 = np.array([[100],[100],[100]], dtype = np.float64)
