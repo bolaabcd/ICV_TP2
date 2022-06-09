@@ -92,10 +92,10 @@ def object3D(obj, tra, rotation): # x,y,z is the world position
             viewmat[i][j] = rot[i][j]
         viewmat[i][3] = tra[i][0]
     viewmat[3][3] = 1
+    viewmat = viewmat.T
 
-    viewmat = openCV_to_openGL@viewmat
+    viewmat = viewmat @ openCV_to_openGL
 
-    viewmat = viewmat.T 
 
     # glTranslate(3,-2,0)
     glPushMatrix()
@@ -244,9 +244,9 @@ def update_image():
     where_pika, orientation = get_targets(quads)
     # print(orientation)
     where_pika = np.array(where_pika, dtype = np.float64)
-    siz = 3
+    siz = 2
     # obj_pts = np.array([[0,0,siz],[0,0,0],[siz,0,0],[siz,0,siz]], dtype = np.float64)
-    obj_pts = np.array([[-siz/2,-siz/2,0],[-siz/2,siz/2,0],[siz/2,siz/2,0],[siz/2,-siz/2,0]], dtype = np.float64)
+    obj_pts = np.array([[siz/2,-siz/2,0],[-siz/2,-siz/2,0],[-siz/2,siz/2,0],[siz/2,siz/2,0]], dtype = np.float64)
 
     rot1 = rot2 = rot3 = np.array([[0],[0],[0]], dtype = np.float64)
     tra1 = tra2 = tra3 = np.array([[100],[100],[100]], dtype = np.float64)
@@ -260,6 +260,35 @@ def update_image():
     if len(where_pika) > 2:
         success, rot3, tra3 = cv2.solvePnP(obj_pts, where_pika[2], cameraMatrix, distCoeffs)
         assert(success)
+    # print("img:")
+    # print(where_pika)
+    # print("rots:")
+    # print(rot1)
+    # print(rot2)
+    # print(rot3)
+    # print("trs:")
+    # print(tra1)
+    # print(tra2)
+    # print(tra3)
+    # cv2.imshow('a',image)
+    # cv2.waitKey()
+    # tra1[0][0] = 3.4
+    # tra1[1][0] = 1.8
+    # tra1[2][0] = 11.99
+    # tra1[0][0] -= 1.2
+    # tra1[1][0] -= 0.208
+    # tra1 -= [[1.2],[0.208],[0]]
+    # tra2 -= [[-1.2],[-0.208],[0]]
+    # tra3 -= [[1.2],[-2.208],[0]]
+    tra1/=1.3
+    tra1[2]*=1.3
+    tra2/=1.3
+    tra2[2]*=1.3
+    tra3/=1.3
+    tra3[2]*=1.3
+    # tra1[1]+=1
+    # tra2[1]+=1
+    # tra3[1]+=1
 
     surf = pygame.surfarray.make_surface(image)
     imagepygame = pygame.image.tostring(surf, 'RGBA', 1)
