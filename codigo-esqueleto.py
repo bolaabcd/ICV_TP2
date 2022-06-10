@@ -108,6 +108,9 @@ def object3D(obj, tra, rotation): # x,y,z is the world position
 
     viewmat = viewmat @ openCV_to_openGL
 
+    if not (tra[0] >= -1.5 and tra[1] >= -5 and tra[2] >= 10.5):
+        rotval *= -1
+
 
     # glTranslate(3,-2,0)
     glPushMatrix()
@@ -129,8 +132,11 @@ def object3D(obj, tra, rotation): # x,y,z is the world position
 
     glColor(1,1,1)
     glRotate(90,1,0,0)
-
+    if not (tra[0] >= -1.5 and tra[1] >= -6 and tra[2] >= 10.5):
+        glColor(0,1/2,0)
     glutWireCube(2)
+    if not (tra[0] >= -1.5 and tra[1] >= -6 and tra[2] >= 10.5):
+        glColor(1,1,1)
     glEnable(GL_TEXTURE_2D)
     # renderiza o modelo do Pikachu
     glTranslate(0,0,-1)
@@ -140,7 +146,6 @@ def object3D(obj, tra, rotation): # x,y,z is the world position
     glTranslate(0,0,1)
     # glRotate(90,1,0,0)
     # glTranslate(0,0,1)
-    rotval+=1
 
     # glTranslate(0,0,-1)
     # glRotate(-rotation[0],rotation[1],rotation[2],rotation[3])
@@ -149,6 +154,10 @@ def object3D(obj, tra, rotation): # x,y,z is the world position
     glPopMatrix()
     # glTranslate(-3,2,0)
     # glTranslate(-x,-y,-z)
+
+    if not (tra[0] >= -1.5 and tra[1] >= -5 and tra[2] >= 10.5):
+        rotval *= -1
+    rotval+=1
     
 
 def draw_background():
@@ -345,6 +354,12 @@ def displayCallback():
     draw_background()
 
     # carregar o modelo 3D dos Pikachus
+    print("Tras:")
+    print(tra1)
+    print(tra2)
+    print(tra3)
+    cv2.imshow('a',image)
+    cv2.waitKey()
     object3D(pikapika1,tra1,rot1)
     object3D(pikapika1,tra2,rot2) 
     object3D(pikapika1,tra3,rot3) 
