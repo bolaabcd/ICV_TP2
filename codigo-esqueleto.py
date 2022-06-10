@@ -94,7 +94,7 @@ def initOpenGL(dimensions):
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, ix, iy, 0, GL_BGRA,
         GL_UNSIGNED_BYTE, imagepygame)
 
-def object3D(obj, tra, rotation): # x,y,z is the world position
+def object3D(obj, tra, rotation, colr): # x,y,z is the world position
     global openCV_to_openGL, rotval
     rot = cv2.Rodrigues(rotation)[0]
 
@@ -108,7 +108,7 @@ def object3D(obj, tra, rotation): # x,y,z is the world position
 
     viewmat = viewmat @ openCV_to_openGL
 
-    if not (tra[0] >= -1.5 and tra[1] >= -5 and tra[2] >= 10.5):
+    if (tra[0] > -1.24 and tra[0] < 4.92 and tra[1] > -5.87 and tra[1] < -2.83 and tra[2] > 10.68 and tra[2] < 16.26):
         rotval *= -1
 
 
@@ -132,11 +132,11 @@ def object3D(obj, tra, rotation): # x,y,z is the world position
 
     glColor(1,1,1)
     glRotate(90,1,0,0)
-    if not (tra[0] >= -1.5 and tra[1] >= -6 and tra[2] >= 10.5):
-        glColor(0,1/2,0)
-    glutWireCube(2)
-    if not (tra[0] >= -1.5 and tra[1] >= -6 and tra[2] >= 10.5):
-        glColor(1,1,1)
+    # if tra[0] > -1.24 and tra[0] < 4.92 and tra[1] > -5.87 and tra[1] < -2.83 and tra[2] > 10.68 and tra[2] < 16.26: #not (tra[0] >= -1.5 and tra[1] >= -6 and tra[2] >= 10.5):
+    #     glColor(*colr)
+    glutWireCube(3)
+    # if tra[0] > -1.24 and tra[0] < 4.92 and tra[1] > -5.87 and tra[1] < -2.83 and tra[2] > 10.68 and tra[2] < 16.26: #not (tra[0] >= -1.5 and tra[1] >= -6 and tra[2] >= 10.5):
+    #     glColor(1,1,1)
     glEnable(GL_TEXTURE_2D)
     # renderiza o modelo do Pikachu
     glTranslate(0,0,-1)
@@ -155,7 +155,7 @@ def object3D(obj, tra, rotation): # x,y,z is the world position
     # glTranslate(-3,2,0)
     # glTranslate(-x,-y,-z)
 
-    if not (tra[0] >= -1.5 and tra[1] >= -5 and tra[2] >= 10.5):
+    if (tra[0] > -1.24 and tra[0] < 4.92 and tra[1] > -5.87 and tra[1] < -2.83 and tra[2] > 10.68 and tra[2] < 16.26):
         rotval *= -1
     rotval+=1
     
@@ -337,10 +337,13 @@ def update_image():
     #     GL_UNSIGNED_BYTE, image) # para debugar, mais lento que subimage mas menos chance de erro
     return (rot1, tra1), (rot2, tra2), (rot3, tra3)
 
+tra1lim, tra2lim, tra3lim = ((-1e8, 1e8), (-1e8, 1e8), (-1e8, 1e8)), ((-1e8, 1e8), (-1e8, 1e8), (-1e8, 1e8)), ((-1e8, 1e8), (-1e8, 1e8), (-1e8, 1e8))
+framem = 0
 def displayCallback():
     global pikapika1
     global pikapika2
     global pikapika3
+    global tra1lim, tra2lim, tra3lim, framem
 
     glMatrixMode(GL_MODELVIEW)
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
@@ -354,15 +357,41 @@ def displayCallback():
     draw_background()
 
     # carregar o modelo 3D dos Pikachus
-    print("Tras:")
-    print(tra1)
-    print(tra2)
-    print(tra3)
-    cv2.imshow('a',image)
-    cv2.waitKey()
-    object3D(pikapika1,tra1,rot1)
-    object3D(pikapika1,tra2,rot2) 
-    object3D(pikapika1,tra3,rot3) 
+    # print("Tras:")
+    # print(tra1)
+    # print(tra2)
+    # print(tra3)
+    if framem == 544 or framem == 582 or framem == 1082:
+        tra1lim, tra2lim, tra3lim = ((-1e8, 1e8), (-1e8, 1e8), (-1e8, 1e8)), ((-1e8, 1e8), (-1e8, 1e8), (-1e8, 1e8)), ((-1e8, 1e8), (-1e8, 1e8), (-1e8, 1e8))
+    if tra1[0][0] != 100:
+        tra1lim = (
+            (max(tra1lim[0][0], tra1[0][0]), min(tra1lim[0][1], tra1[0][0])),
+            (max(tra1lim[1][0], tra1[1][0]), min(tra1lim[1][1], tra1[1][0])),
+            (max(tra1lim[2][0], tra1[2][0]), min(tra1lim[2][1], tra1[2][0]))
+        )
+    if tra2[0][0] != 100:
+        tra2lim = (
+            (max(tra2lim[0][0], tra2[0][0]), min(tra2lim[0][1], tra2[0][0])),
+            (max(tra2lim[1][0], tra2[1][0]), min(tra2lim[1][1], tra2[1][0])),
+            (max(tra2lim[2][0], tra2[2][0]), min(tra2lim[2][1], tra2[2][0]))
+        )
+    if tra3[0][0] != 100:
+        tra3lim = (
+            (max(tra3lim[0][0], tra3[0][0]), min(tra3lim[0][1], tra3[0][0])),
+            (max(tra3lim[1][0], tra3[1][0]), min(tra3lim[1][1], tra3[1][0])),
+            (max(tra3lim[2][0], tra3[2][0]), min(tra3lim[2][1], tra3[2][0]))
+        )
+    print("Lims: ")
+    print(tra1lim)
+    print(tra2lim)
+    print(tra3lim)
+    print(framem)
+    framem += 1
+    # cv2.imshow('a',image)
+    # cv2.waitKey()
+    object3D(pikapika1,tra1,rot1, (1,0,0))
+    object3D(pikapika1,tra2,rot2, (0,1,0)) 
+    object3D(pikapika1,tra3,rot3, (0,0,1)) 
 
     # glRotate(-45,0,1,0)
     # glTranslate(-10,-0,50)
