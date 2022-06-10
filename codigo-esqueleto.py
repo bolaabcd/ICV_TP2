@@ -116,6 +116,18 @@ def object3D(obj, tra, rotation): # x,y,z is the world position
     # glRotate(-90,1,0,0)
 
     glDisable(GL_TEXTURE_2D)
+
+    glRotate(-90,1,0,0)
+    glColor(1/2,0,0)
+    gluCylinder( gluNewQuadric() , 1/10 , 1/10 , 3 , 10 , 10)
+
+    glTranslate(0,0,3)
+    glutSolidCone(1/2,1,10,10)
+    glTranslate(-0,-0,-3)
+
+    glColor(1,1,1)
+    glRotate(90,1,0,0)
+
     glutWireCube(2)
     glEnable(GL_TEXTURE_2D)
     # renderiza o modelo do Pikachu
