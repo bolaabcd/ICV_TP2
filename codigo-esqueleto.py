@@ -57,6 +57,8 @@ openCV_to_openGL = np.array(
     , dtype = np.float64
 )
 
+rotval = 0
+
 
 def initOpenGL(dimensions):
     global background_texture
@@ -93,7 +95,7 @@ def initOpenGL(dimensions):
         GL_UNSIGNED_BYTE, imagepygame)
 
 def object3D(obj, tra, rotation): # x,y,z is the world position
-    global openCV_to_openGL
+    global openCV_to_openGL, rotval
     rot = cv2.Rodrigues(rotation)[0]
 
     viewmat = np.zeros((4,4),dtype = np.float64)
@@ -132,10 +134,13 @@ def object3D(obj, tra, rotation): # x,y,z is the world position
     glEnable(GL_TEXTURE_2D)
     # renderiza o modelo do Pikachu
     glTranslate(0,0,-1)
+    glRotate(rotval,0,0,1)
     glCallList(obj.gl_list)
+    glRotate(-rotval,0,0,1)
     glTranslate(0,0,1)
     # glRotate(90,1,0,0)
     # glTranslate(0,0,1)
+    rotval+=1
 
     # glTranslate(0,0,-1)
     # glRotate(-rotation[0],rotation[1],rotation[2],rotation[3])
