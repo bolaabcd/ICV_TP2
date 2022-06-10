@@ -34,8 +34,18 @@ cameraMatrix = np.array(
         [0        , 0        , 1        ],
     ], dtype = np.float64
 )
+cameraMatrix = np.array(
+    [
+        [305.63204*1.3, 0        , 327.02195],
+        [0        , 299.37624*1.3, 248.75539],
+        [0        , 0        , 1        ],
+    ], dtype = np.float64
+)
 
 distCoeffs = np.array([-0.03318, 0.09094, 0.02252, 0.00253, 0.00000], dtype = np.float64)
+
+# distCoeffs = np.array([0.09043, -0.20861 , -0.00432, -0.00635, 0.00000], dtype = np.float64)
+
 
 openCV_to_openGL = np.array(
     [
@@ -109,8 +119,9 @@ def object3D(obj, tra, rotation): # x,y,z is the world position
     glutWireCube(2)
     glEnable(GL_TEXTURE_2D)
     # renderiza o modelo do Pikachu
+    glTranslate(0,0,-1)
     glCallList(obj.gl_list)
-
+    glTranslate(0,0,1)
     # glRotate(90,1,0,0)
     # glTranslate(0,0,1)
 
@@ -280,15 +291,15 @@ def update_image():
     # tra1 -= [[1.2],[0.208],[0]]
     # tra2 -= [[-1.2],[-0.208],[0]]
     # tra3 -= [[1.2],[-2.208],[0]]
-    tra1/=1.3
-    tra1[2]*=1.3
-    tra2/=1.3
-    tra2[2]*=1.3
-    tra3/=1.3
-    tra3[2]*=1.3
     # tra1[1]+=1
     # tra2[1]+=1
     # tra3[1]+=1
+    # tra1/=1.3
+    # tra1[2]*=1.3
+    # tra2/=1.3
+    # tra2[2]*=1.3
+    # tra3/=1.3
+    # tra3[2]*=1.3
 
     surf = pygame.surfarray.make_surface(image)
     imagepygame = pygame.image.tostring(surf, 'RGBA', 1)
