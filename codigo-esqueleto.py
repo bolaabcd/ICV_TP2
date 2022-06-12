@@ -9,6 +9,8 @@ from OpenGL.GL import *
 from OpenGL.GLUT import *
 from OpenGL.GLU import *
 
+from PIL import Image
+from PIL import ImageOps
 
 from objloader import *
 
@@ -361,31 +363,31 @@ def displayCallback():
     # print(tra1)
     # print(tra2)
     # print(tra3)
-    if framem == 544 or framem == 582 or framem == 1082:
-        tra1lim, tra2lim, tra3lim = ((-1e8, 1e8), (-1e8, 1e8), (-1e8, 1e8)), ((-1e8, 1e8), (-1e8, 1e8), (-1e8, 1e8)), ((-1e8, 1e8), (-1e8, 1e8), (-1e8, 1e8))
-    if tra1[0][0] != 100:
-        tra1lim = (
-            (max(tra1lim[0][0], tra1[0][0]), min(tra1lim[0][1], tra1[0][0])),
-            (max(tra1lim[1][0], tra1[1][0]), min(tra1lim[1][1], tra1[1][0])),
-            (max(tra1lim[2][0], tra1[2][0]), min(tra1lim[2][1], tra1[2][0]))
-        )
-    if tra2[0][0] != 100:
-        tra2lim = (
-            (max(tra2lim[0][0], tra2[0][0]), min(tra2lim[0][1], tra2[0][0])),
-            (max(tra2lim[1][0], tra2[1][0]), min(tra2lim[1][1], tra2[1][0])),
-            (max(tra2lim[2][0], tra2[2][0]), min(tra2lim[2][1], tra2[2][0]))
-        )
-    if tra3[0][0] != 100:
-        tra3lim = (
-            (max(tra3lim[0][0], tra3[0][0]), min(tra3lim[0][1], tra3[0][0])),
-            (max(tra3lim[1][0], tra3[1][0]), min(tra3lim[1][1], tra3[1][0])),
-            (max(tra3lim[2][0], tra3[2][0]), min(tra3lim[2][1], tra3[2][0]))
-        )
-    print("Lims: ")
-    print(tra1lim)
-    print(tra2lim)
-    print(tra3lim)
-    print(framem)
+    # if framem == 544 or framem == 582 or framem == 1082:
+    #     tra1lim, tra2lim, tra3lim = ((-1e8, 1e8), (-1e8, 1e8), (-1e8, 1e8)), ((-1e8, 1e8), (-1e8, 1e8), (-1e8, 1e8)), ((-1e8, 1e8), (-1e8, 1e8), (-1e8, 1e8))
+    # if tra1[0][0] != 100:
+    #     tra1lim = (
+    #         (max(tra1lim[0][0], tra1[0][0]), min(tra1lim[0][1], tra1[0][0])),
+    #         (max(tra1lim[1][0], tra1[1][0]), min(tra1lim[1][1], tra1[1][0])),
+    #         (max(tra1lim[2][0], tra1[2][0]), min(tra1lim[2][1], tra1[2][0]))
+    #     )
+    # if tra2[0][0] != 100:
+    #     tra2lim = (
+    #         (max(tra2lim[0][0], tra2[0][0]), min(tra2lim[0][1], tra2[0][0])),
+    #         (max(tra2lim[1][0], tra2[1][0]), min(tra2lim[1][1], tra2[1][0])),
+    #         (max(tra2lim[2][0], tra2[2][0]), min(tra2lim[2][1], tra2[2][0]))
+    #     )
+    # if tra3[0][0] != 100:
+    #     tra3lim = (
+    #         (max(tra3lim[0][0], tra3[0][0]), min(tra3lim[0][1], tra3[0][0])),
+    #         (max(tra3lim[1][0], tra3[1][0]), min(tra3lim[1][1], tra3[1][0])),
+    #         (max(tra3lim[2][0], tra3[2][0]), min(tra3lim[2][1], tra3[2][0]))
+    #     )
+    # print("Lims: ")
+    # print(tra1lim)
+    # print(tra2lim)
+    # print(tra3lim)
+    # print(framem)
     framem += 1
     # cv2.imshow('a',image)
     # cv2.waitKey()
@@ -396,6 +398,11 @@ def displayCallback():
     # glRotate(-45,0,1,0)
     # glTranslate(-10,-0,50)
     glutSwapBuffers()    
+    if framem > 1:
+        pix = glReadPixels(0,0,640,480,GL_RGBA,GL_UNSIGNED_BYTE)
+        image = Image.frombytes("RGBA", (640, 480), pix)
+        image = ImageOps.flip(image) # in my case image is flipped top-bottom for some reason
+        image.save('./framesafter/arq'+str(framem)+'.png', 'PNG')
     
 
 def idleCallback():
