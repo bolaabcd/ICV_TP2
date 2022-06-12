@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 
-from operator import is_
+import pygame
 import cv2
 from cv2 import threshold
 import numpy as np
@@ -164,7 +164,7 @@ def object3D(obj, tra, rotation, colr): # x,y,z is the world position
 
 def draw_background():
     global background_texture
-    depth = 100 # max profundidade
+    depth = 1 # max profundidade
     scale = 1.13
     glEnable(GL_TEXTURE_2D)
     glBindTexture(GL_TEXTURE_2D, background_texture)
@@ -356,7 +356,10 @@ def displayCallback():
     # Atualizar imagem
     (rot1, tra1), (rot2, tra2), (rot3, tra3) = update_image()
     # Desenhar fundo
+    glDepthMask(GL_FALSE)
     draw_background()
+    glFlush()
+    glDepthMask(GL_TRUE)
 
     # carregar o modelo 3D dos Pikachus
     # print("Tras:")
