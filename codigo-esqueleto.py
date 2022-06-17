@@ -96,7 +96,7 @@ def initOpenGL(dimensions):
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, ix, iy, 0, GL_BGRA,
         GL_UNSIGNED_BYTE, imagepygame)
 
-def object3D(obj, tra, rotation, colr): # x,y,z is the world position
+def object3D(obj, tra, rotation):
     global openCV_to_openGL, rotval
     rot = cv2.Rodrigues(rotation)[0]
 
@@ -192,7 +192,8 @@ def get_targets(quads):
     grayimg = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     _, trimg = cv2.threshold(grayimg, 127, 255, cv2.THRESH_BINARY)
 
-    retq, reto = [], []
+    retq = []
+    # reto = []
     for quad in quads:
         twid, thei = target.shape[0], target.shape[1]
         input_points = quad.tolist()
@@ -217,9 +218,9 @@ def get_targets(quads):
                 # input_points = [input_points[-1]]+input_points[:-1]
                 # print(input_points)
                 retq.append(np.array(input_points, dtype = np.float32))
-                reto.append(j)
+                # reto.append(j)
                 break
-    return retq, reto
+    return retq
 
 def find_good_quadrilaterals(image):
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
@@ -280,12 +281,11 @@ def update_image():
     assert(image.max() <= 255 and image.min() >= 0)
 
     image, quads = find_good_quadrilaterals(image)
-    where_pika, orientation = get_targets(quads)
+    where_pika = get_targets(quads)
     # print(orientation)
     where_pika = np.array(where_pika, dtype = np.float64)
-    siz = 2
     # obj_pts = np.array([[0,0,siz],[0,0,0],[siz,0,0],[siz,0,siz]], dtype = np.float64)
-    obj_pts = np.array([[siz/2,-siz/2,0],[-siz/2,-siz/2,0],[-siz/2,siz/2,0],[siz/2,siz/2,0]], dtype = np.float64)
+    obj_pts = np.array([[1,-1,0],[-1,-1,0],[-1,1,0],[1,1,0]], dtype = np.float64)
 
     rot1 = rot2 = rot3 = np.array([[0],[0],[0]], dtype = np.float64)
     tra1 = tra2 = tra3 = np.array([[100],[100],[100]], dtype = np.float64)
@@ -394,9 +394,9 @@ def displayCallback():
     framem += 1
     # cv2.imshow('a',image)
     # cv2.waitKey()
-    object3D(pikapika1,tra1,rot1, (1,0,0))
-    object3D(pikapika1,tra2,rot2, (0,1,0)) 
-    object3D(pikapika1,tra3,rot3, (0,0,1)) 
+    object3D(pikapika1,tra1,rot1)
+    object3D(pikapika1,tra2,rot2) 
+    object3D(pikapika1,tra3,rot3) 
 
     # glRotate(-45,0,1,0)
     # glTranslate(-10,-0,50)
